@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Web App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Simple Web App</h1>
+    <p>Enter your name and click the button to see a greeting.</p>
+
+    <label class="field-label" for="name-input">Your name</label>
+    <input id="name-input" type="text" placeholder="Type your name" autocomplete="off">
+
+    <div class="buttons">
+      <button id="greet-button" type="button">Greet me</button>
+      <button id="count-button" type="button">Click count</button>
+    </div>
+
+    <section class="output">
+      <p id="greeting-text">Hello! I am ready when you are.</p>
+      <p id="click-count-text">Button clicked 0 times.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
