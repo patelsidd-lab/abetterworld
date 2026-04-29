@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salesman Salary Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <section class="calculator" aria-labelledby="app-title">
+      <div class="intro">
+        <p class="eyebrow">Salary calculator</p>
+        <h1 id="app-title">Calculate salesman salary</h1>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Salary sections">
+        <button id="tab-salary" class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="salary-panel">Salary</button>
+        <button id="tab-forwarded" class="tab" type="button" role="tab" aria-selected="false" aria-controls="forwarded-panel">Forwarded messages</button>
+        <button id="tab-settings" class="tab" type="button" role="tab" aria-selected="false" aria-controls="settings-panel">Base numbers</button>
+      </div>
+
+      <section id="salary-panel" class="panel is-active" role="tabpanel" aria-labelledby="tab-salary">
+        <form id="salesman-form" class="inline-form">
+          <label for="new-salesman">
+            Add salesman
+            <input id="new-salesman" name="new-salesman" type="text" placeholder="Enter name" autocomplete="off">
+          </label>
+          <button type="submit" class="small-button">Add</button>
+        </form>
+
+        <form id="salary-form" class="salary-form">
+          <div class="field-grid">
+            <label for="salary-salesman">
+              Salesman
+              <select id="salary-salesman" name="salary-salesman" required>
+                <option value="" selected disabled>Select a salesman</option>
+              </select>
+            </label>
+
+            <label for="salary-trip-number">
+              Trip number
+              <input id="salary-trip-number" name="salary-trip-number" type="number" min="1" step="1" placeholder="1" required>
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label for="salary-start-date">
+              Trip start
+              <input id="salary-start-date" name="salary-start-date" type="date" required>
+            </label>
+
+            <label for="salary-end-date">
+              Trip end
+              <input id="salary-end-date" name="salary-end-date" type="date" required>
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label for="base-salary">
+              Monthly base salary
+              <input id="base-salary" name="base-salary" type="number" min="0" step="0.01" value="2400" required>
+            </label>
+
+            <label for="inactive-sales">
+              Inactive sales before trip
+              <input id="inactive-sales" name="inactive-sales" type="number" min="0" step="0.01" value="0" required>
+            </label>
+          </div>
+
+          <label for="commission-start">
+            Monthly commission starts after
+            <input id="commission-start" name="commission-start" type="number" min="0" step="0.01" value="40000" required>
+          </label>
+
+          <fieldset class="options">
+            <legend>Commission tiers</legend>
+            <div class="tier-grid">
+              <label for="tier-one-amount">
+                Tier 1 amount
+                <input id="tier-one-amount" name="tier-one-amount" type="number" min="0" step="0.01" value="60000" required>
+              </label>
+
+              <label for="tier-one-rate">
+                Tier 1 rate
+                <input id="tier-one-rate" name="tier-one-rate" type="number" min="0" step="0.001" value="0.03" required>
+              </label>
+
+              <label for="tier-two-amount">
+                Tier 2 amount
+                <input id="tier-two-amount" name="tier-two-amount" type="number" min="0" step="0.01" value="50000" required>
+              </label>
+
+              <label for="tier-two-rate">
+                Tier 2 rate
+                <input id="tier-two-rate" name="tier-two-rate" type="number" min="0" step="0.001" value="0.035" required>
+              </label>
+
+              <label for="remaining-rate">
+                Remaining rate
+                <input id="remaining-rate" name="remaining-rate" type="number" min="0" step="0.001" value="0.04" required>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="monthly-sales">
+            <div class="section-heading">
+              <strong>Monthly sales</strong>
+              <button id="build-salary-months" type="button" class="secondary small-button">Build months</button>
+            </div>
+            <div id="salary-months" class="salary-months">
+              <p class="empty-state">Enter trip dates, then build monthly rows.</p>
+            </div>
+          </div>
+
+          <div class="actions salary-actions">
+            <button type="submit">Calculate salary</button>
+            <button type="reset" class="secondary">Clear</button>
+          </div>
+        </form>
+
+        <output id="salary-result" class="salary-result" aria-live="polite">
+          <div class="salary-total-row">
+            <span>Total salary</span>
+            <strong id="salary-total-pay">$0.00</strong>
+          </div>
+          <p id="salary-note">Select a salesman and enter salary details.</p>
+          <div class="share-actions">
+            <a id="whatsapp-share" class="whatsapp-button is-disabled" href="#" target="_blank" rel="noopener">Forward on WhatsApp</a>
+          </div>
+          <div id="salary-breakdown" class="salary-breakdown"></div>
+        </output>
+      </section>
+
+      <section id="forwarded-panel" class="panel" role="tabpanel" aria-labelledby="tab-forwarded" hidden>
+        <div class="section-heading">
+          <strong>Forwarded messages</strong>
+          <button id="clear-forwarded" type="button" class="secondary small-button">Clear</button>
+        </div>
+        <div id="forwarded-list" class="forwarded-list" aria-live="polite">
+          <p class="empty-state">No forwarded messages saved yet.</p>
+        </div>
+      </section>
+
+      <section id="settings-panel" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+        <div class="section-heading">
+          <strong>Salesman base numbers</strong>
+        </div>
+        <div id="settings-list" class="settings-list" aria-live="polite">
+          <p class="empty-state">Calculate a salary to save base numbers for a salesman.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
