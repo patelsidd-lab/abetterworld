@@ -64,7 +64,7 @@
 
             <label for="inactive-sales">
               Inactive sales before trip
-              <input id="inactive-sales" name="inactive-sales" type="number" min="0" step="0.01" value="0" required>
+              <input id="inactive-sales" name="inactive-sales" type="number" min="0" step="0.01" required>
             </label>
           </div>
 
@@ -82,8 +82,8 @@
               </label>
 
               <label for="tier-one-rate">
-                Tier 1 rate
-                <input id="tier-one-rate" name="tier-one-rate" type="number" min="0" step="0.001" value="0.03" required>
+                Tier 1 rate %
+                <input id="tier-one-rate" name="tier-one-rate" type="number" min="0" step="0.01" value="3" required>
               </label>
 
               <label for="tier-two-amount">
@@ -92,13 +92,32 @@
               </label>
 
               <label for="tier-two-rate">
-                Tier 2 rate
-                <input id="tier-two-rate" name="tier-two-rate" type="number" min="0" step="0.001" value="0.035" required>
+                Tier 2 rate %
+                <input id="tier-two-rate" name="tier-two-rate" type="number" min="0" step="0.01" value="3.5" required>
               </label>
 
               <label for="remaining-rate">
-                Remaining rate
-                <input id="remaining-rate" name="remaining-rate" type="number" min="0" step="0.001" value="0.04" required>
+                Remaining rate %
+                <input id="remaining-rate" name="remaining-rate" type="number" min="0" step="0.01" value="4" required>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="options">
+            <legend>Load from image</legend>
+            <div class="ocr-panel">
+              <label for="ocr-image">
+                Upload team image
+                <input id="ocr-image" name="ocr-image" type="file" accept="image/*">
+              </label>
+              <div class="actions ocr-actions">
+                <button id="read-image" type="button" class="secondary">Read image</button>
+                <button id="use-detected-text" type="button" class="secondary">Use detected text</button>
+              </div>
+              <p id="ocr-status" class="helper-text">Upload an image, then read it before loading values.</p>
+              <label for="ocr-text">
+                Detected text
+                <textarea id="ocr-text" name="ocr-text" rows="6" placeholder="Detected image text will appear here."></textarea>
               </label>
             </div>
           </fieldset>
@@ -153,6 +172,7 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

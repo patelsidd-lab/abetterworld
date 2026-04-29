@@ -13,6 +13,11 @@ const tierOneRateInput = document.querySelector("#tier-one-rate");
 const tierTwoAmountInput = document.querySelector("#tier-two-amount");
 const tierTwoRateInput = document.querySelector("#tier-two-rate");
 const remainingRateInput = document.querySelector("#remaining-rate");
+const ocrImageInput = document.querySelector("#ocr-image");
+const readImageButton = document.querySelector("#read-image");
+const useDetectedTextButton = document.querySelector("#use-detected-text");
+const ocrStatus = document.querySelector("#ocr-status");
+const ocrText = document.querySelector("#ocr-text");
 const buildSalaryMonthsButton = document.querySelector("#build-salary-months");
 const salaryMonths = document.querySelector("#salary-months");
 const salaryTotalPay = document.querySelector("#salary-total-pay");
@@ -82,6 +87,80 @@ function formatCurrency(value) {
     style: "currency",
     currency: "USD"
   });
+}
+
+function formatRate(value) {
+  return `${Number(value).toLocaleString()}%`;
+}
+
+function ratePercentToDecimal(value) {
+  return Number(value) / 100;
+}
+
+function normalizeRatePercent(value) {
+  const rate = Number(value);
+  return rate > 0 && rate < 1 ? rate * 100 : rate;
+}
+
+function normalizeInactiveSales(value) {
+  return Number(value) === 0 ? "" : value;
+}
+
+function normalizeExtractedNumber(value) {
+  return Number(String(value).replace(/[$,\s]/g, ""));
+}
+
+function parseImageDate(value) {
+  const parts = value.match(/\d{1,4}/g);
+
+  if (!parts || parts.length < 2) {
+    return "";
+  }
+
+  let month;
+  let day;
+  let year;
+
+  if (parts[0].length === 4) {
+    year = Number(parts[0]);
+    month = Number(parts[1]);
+    day = Number(parts[2]);
+  } else {
+    month = Number(parts[0]);
+    day = Number(parts[1]);
+    year = parts[2] ? Number(parts[2]) : new Date().getFullYear();
+  }
+
+  if (!month || !day || month > 12 || day > 31) {
+    return "";
+  }
+
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function findExistingSalesmanInText(text) {
+  const lowerText = text.toLowerCase();
+  return salesmen.find((name) => lowerText.includes(name.toLowerCase())) || "";
+}
+
+function extractNumbersFromText(text) {
+  return Array.from(text.matchAll(/\$?\d[\d,]*(?:\.\d+)?/g))
+    .map((match) => normalizeExtractedNumber(match[0]))
+    .filter((number) => Number.isFinite(number));
+}
+
+function extractDatesFromText(text) {
+  return Array.from(text.matchAll(/\b(?:\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b/g))
+    .map((match) => parseImageDate(match[0]))
+    .filter(Boolean);
+}
+
+function extractValueAfterLabel(text, labels) {
+  const escapedLabels = labels.map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const pattern = new RegExp(`(?:${escapedLabels})\\s*[:\\-]?\\s*\\$?([\\d,]+(?:\\.\\d+)?)`, "i");
+  const match = text.match(pattern);
+
+  return match ? normalizeExtractedNumber(match[1]) : null;
 }
 
 function getInclusiveDays(startValue, endValue) {
@@ -181,7 +260,7 @@ function addSalesman(event) {
 function getCurrentBaseSettings() {
   return {
     baseSalary: baseSalaryInput.value,
-    inactiveSales: inactiveSalesInput.value,
+    inactiveSales: normalizeInactiveSales(inactiveSalesInput.value),
     commissionStart: commissionStartInput.value,
     tierOneAmount: tierOneAmountInput.value,
     tierOneRate: tierOneRateInput.value,
@@ -206,17 +285,19 @@ function loadBaseSettingsForSelectedSalesman() {
   const settings = salesmanSettings[salarySalesmanInput.value];
 
   if (!settings) {
+    saveSalaryDraft();
     return;
   }
 
   baseSalaryInput.value = settings.baseSalary;
-  inactiveSalesInput.value = settings.inactiveSales;
+  inactiveSalesInput.value = normalizeInactiveSales(settings.inactiveSales);
   commissionStartInput.value = settings.commissionStart;
   tierOneAmountInput.value = settings.tierOneAmount;
-  tierOneRateInput.value = settings.tierOneRate;
+  tierOneRateInput.value = normalizeRatePercent(settings.tierOneRate);
   tierTwoAmountInput.value = settings.tierTwoAmount;
-  tierTwoRateInput.value = settings.tierTwoRate;
-  remainingRateInput.value = settings.remainingRate;
+  tierTwoRateInput.value = normalizeRatePercent(settings.tierTwoRate);
+  remainingRateInput.value = normalizeRatePercent(settings.remainingRate);
+  saveSalaryDraft();
 }
 
 function calculateTieredCommission(eligibleSales, tiers) {
@@ -270,6 +351,23 @@ function renderSalaryMonthRows(segments, savedRows = []) {
       </article>
     `)
     .join("");
+}
+
+function fillMonthlySalesFromNumbers(numbers) {
+  const rows = getSalaryMonthRows();
+  const salesNumbers = numbers
+    .filter((number) => number >= 100)
+    .sort((first, second) => second - first);
+
+  rows.forEach((row, index) => {
+    const salesInput = row.querySelector(".month-sales");
+
+    if (salesInput && salesNumbers[index] !== undefined) {
+      salesInput.value = salesNumbers[index];
+    }
+  });
+
+  saveSalaryDraft();
 }
 
 function getSavedMonthSales(segment, savedRows) {
@@ -331,13 +429,13 @@ function restoreSalaryDraft() {
   salaryStartDateInput.value = draft.startDate || "";
   salaryEndDateInput.value = draft.endDate || "";
   baseSalaryInput.value = draft.baseSalary || baseSalaryInput.value;
-  inactiveSalesInput.value = draft.inactiveSales || inactiveSalesInput.value;
+  inactiveSalesInput.value = normalizeInactiveSales(draft.inactiveSales);
   commissionStartInput.value = draft.commissionStart || commissionStartInput.value;
   tierOneAmountInput.value = draft.tierOneAmount || tierOneAmountInput.value;
-  tierOneRateInput.value = draft.tierOneRate || tierOneRateInput.value;
+  tierOneRateInput.value = draft.tierOneRate ? normalizeRatePercent(draft.tierOneRate) : tierOneRateInput.value;
   tierTwoAmountInput.value = draft.tierTwoAmount || tierTwoAmountInput.value;
-  tierTwoRateInput.value = draft.tierTwoRate || tierTwoRateInput.value;
-  remainingRateInput.value = draft.remainingRate || remainingRateInput.value;
+  tierTwoRateInput.value = draft.tierTwoRate ? normalizeRatePercent(draft.tierTwoRate) : tierTwoRateInput.value;
+  remainingRateInput.value = draft.remainingRate ? normalizeRatePercent(draft.remainingRate) : remainingRateInput.value;
 
   if (draft.startDate && draft.endDate && draft.monthRows && draft.monthRows.length) {
     renderSalaryMonthRows(getMonthSegments(draft.startDate, draft.endDate), draft.monthRows);
@@ -368,7 +466,7 @@ function updateSalaryResult(total = 0, salesman = "", tripNumber = "", period = 
         <span>Prorated commission starts after: ${formatCurrency(month.commissionStart)}</span>
         <span>Eligible sales: ${formatCurrency(month.eligibleSales)}</span>
         ${month.tierResults.map((tier) => `
-          <span>${formatCurrency(tier.sales)} at ${tier.rate} = ${formatCurrency(tier.commission)}</span>
+        <span>${formatCurrency(tier.sales)} at ${formatRate(tier.ratePercent)} = ${formatCurrency(tier.commission)}</span>
         `).join("")}
         <span>Commission: ${formatCurrency(month.commission)}</span>
         <span>Total: ${formatCurrency(month.total)}</span>
@@ -380,7 +478,7 @@ function updateSalaryResult(total = 0, salesman = "", tripNumber = "", period = 
 function buildSummaryMessage(total, salesman, tripNumber, period, breakdown) {
   const monthLines = breakdown.map((month) => {
     const tierLines = month.tierResults
-      .map((tier) => `${formatCurrency(tier.sales)} at ${tier.rate} = ${formatCurrency(tier.commission)}`)
+      .map((tier) => `${formatCurrency(tier.sales)} at ${formatRate(tier.ratePercent)} = ${formatCurrency(tier.commission)}`)
       .join("; ");
 
     return [
@@ -426,12 +524,12 @@ function calculateSalary(event) {
   saveSalaryDraft();
 
   const baseSalary = Number(baseSalaryInput.value);
-  const inactiveSales = Number(inactiveSalesInput.value);
+  const inactiveSales = Number(inactiveSalesInput.value || 0);
   const commissionStart = Number(commissionStartInput.value);
   const tiers = [
-    { amount: Number(tierOneAmountInput.value), rate: Number(tierOneRateInput.value) },
-    { amount: Number(tierTwoAmountInput.value), rate: Number(tierTwoRateInput.value) },
-    { amount: Infinity, rate: Number(remainingRateInput.value) }
+    { amount: Number(tierOneAmountInput.value), rate: ratePercentToDecimal(tierOneRateInput.value), ratePercent: Number(tierOneRateInput.value) },
+    { amount: Number(tierTwoAmountInput.value), rate: ratePercentToDecimal(tierTwoRateInput.value), ratePercent: Number(tierTwoRateInput.value) },
+    { amount: Infinity, rate: ratePercentToDecimal(remainingRateInput.value), ratePercent: Number(remainingRateInput.value) }
   ];
   const rows = getSalaryMonthRows();
   const period = `${formatDisplayDate(salaryStartDateInput.value)} to ${formatDisplayDate(salaryEndDateInput.value)}`;
@@ -484,6 +582,83 @@ function clearSalaryResult() {
   updateSalaryResult();
   salaryMonths.innerHTML = '<p class="empty-state">Enter trip dates, then build monthly rows.</p>';
   localStorage.removeItem(salaryDraftStorageKey);
+}
+
+async function readImageText() {
+  const file = ocrImageInput.files && ocrImageInput.files[0];
+
+  if (!file) {
+    ocrStatus.textContent = "Choose an image first.";
+    return;
+  }
+
+  if (!window.Tesseract) {
+    ocrStatus.textContent = "OCR library did not load. Check your internet connection and try again.";
+    return;
+  }
+
+  readImageButton.disabled = true;
+  ocrStatus.textContent = "Reading image...";
+
+  try {
+    const result = await Tesseract.recognize(file, "eng", {
+      logger(progress) {
+        if (progress.status === "recognizing text") {
+          ocrStatus.textContent = `Reading image ${Math.round(progress.progress * 100)}%`;
+        }
+      }
+    });
+
+    ocrText.value = result.data.text.trim();
+    ocrStatus.textContent = "Review the detected text, then load values.";
+  } catch {
+    ocrStatus.textContent = "Could not read this image. Try a clearer screenshot or photo.";
+  } finally {
+    readImageButton.disabled = false;
+  }
+}
+
+function useDetectedText() {
+  const text = ocrText.value.trim();
+
+  if (!text) {
+    ocrStatus.textContent = "No detected text to use yet.";
+    return;
+  }
+
+  const detectedSalesman = findExistingSalesmanInText(text);
+  const dates = extractDatesFromText(text);
+  const inactiveSales = extractValueAfterLabel(text, ["inactive sales", "inactive sale", "before trip"]);
+  const tripNumber = extractValueAfterLabel(text, ["trip", "trip number"]);
+  const allNumbers = extractNumbersFromText(text);
+
+  if (detectedSalesman) {
+    salarySalesmanInput.value = detectedSalesman;
+    loadBaseSettingsForSelectedSalesman();
+  }
+
+  if (tripNumber !== null) {
+    salaryTripNumberInput.value = tripNumber;
+  }
+
+  if (dates[0]) {
+    salaryStartDateInput.value = dates[0];
+  }
+
+  if (dates[1]) {
+    salaryEndDateInput.value = dates[1];
+  }
+
+  if (inactiveSales !== null) {
+    inactiveSalesInput.value = inactiveSales;
+  }
+
+  if (salaryStartDateInput.value && salaryEndDateInput.value) {
+    renderSalaryMonthRows(getMonthSegments(salaryStartDateInput.value, salaryEndDateInput.value));
+  }
+
+  fillMonthlySalesFromNumbers(allNumbers);
+  ocrStatus.textContent = "Loaded likely values. Please review before calculating.";
 }
 
 function saveForwardedMessage(event) {
@@ -543,9 +718,9 @@ function renderSalesmanSettings() {
           <span>Monthly base salary: ${formatCurrency(Number(settings.baseSalary))}</span>
           <span>Inactive sales before trip: ${formatCurrency(Number(settings.inactiveSales))}</span>
           <span>Commission starts after: ${formatCurrency(Number(settings.commissionStart))}</span>
-          <span>Tier 1: ${formatCurrency(Number(settings.tierOneAmount))} at ${escapeHtml(settings.tierOneRate)}</span>
-          <span>Tier 2: ${formatCurrency(Number(settings.tierTwoAmount))} at ${escapeHtml(settings.tierTwoRate)}</span>
-          <span>Remaining rate: ${escapeHtml(settings.remainingRate)}</span>
+          <span>Tier 1: ${formatCurrency(Number(settings.tierOneAmount))} at ${formatRate(normalizeRatePercent(settings.tierOneRate))}</span>
+          <span>Tier 2: ${formatCurrency(Number(settings.tierTwoAmount))} at ${formatRate(normalizeRatePercent(settings.tierTwoRate))}</span>
+          <span>Remaining rate: ${formatRate(normalizeRatePercent(settings.remainingRate))}</span>
         </div>
         <small>Updated ${escapeHtml(new Date(settings.updatedAt).toLocaleString())}</small>
       </article>
@@ -579,6 +754,8 @@ salaryForm.addEventListener("input", saveSalaryDraft);
 salaryForm.addEventListener("change", saveSalaryDraft);
 salaryForm.addEventListener("submit", calculateSalary);
 salaryForm.addEventListener("reset", clearSalaryResult);
+readImageButton.addEventListener("click", readImageText);
+useDetectedTextButton.addEventListener("click", useDetectedText);
 buildSalaryMonthsButton.addEventListener("click", buildSalaryMonthRows);
 whatsappShare.addEventListener("click", saveForwardedMessage);
 clearForwardedButton.addEventListener("click", clearForwardedMessages);

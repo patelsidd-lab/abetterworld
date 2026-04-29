@@ -130,6 +130,7 @@ legend {
 input[type="date"],
 input[type="number"],
 input[type="text"],
+textarea,
 select {
   width: 100%;
   margin-top: 8px;
@@ -139,6 +140,11 @@ select {
   color: var(--text);
   background: #fbfcf8;
   font: inherit;
+}
+
+textarea {
+  min-height: 132px;
+  resize: vertical;
 }
 
 input:focus-visible,
@@ -174,6 +180,22 @@ select {
   grid-template-columns: 1fr auto;
   gap: 12px;
   margin-top: 4px;
+}
+
+.ocr-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.ocr-actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+.helper-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .section-heading {
@@ -365,6 +387,7 @@ button:disabled {
   .settings-grid,
   .tier-grid,
   .section-heading,
+  .ocr-actions,
   .actions {
     grid-template-columns: 1fr;
   }
