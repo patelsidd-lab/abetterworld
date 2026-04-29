@@ -29,12 +29,14 @@ const millisecondsPerDay = 24 * 60 * 60 * 1000;
 const salesmanStorageKey = "travelDaysSalesmen";
 const forwardedMessagesStorageKey = "salaryForwardedMessages";
 const salesmanSettingsStorageKey = "salesmanBaseSettings";
+const salaryDraftStorageKey = "salaryCalculatorDraft";
 
 let salesmen = loadFromStorage(salesmanStorageKey, []);
 let forwardedMessages = loadFromStorage(forwardedMessagesStorageKey, []);
 let salesmanSettings = loadFromStorage(salesmanSettingsStorageKey, {});
 let currentSummaryMessage = "";
 let currentSummaryKey = "";
+let isRestoringDraft = false;
 
 function loadFromStorage(key, fallback) {
   const storedValue = localStorage.getItem(key);
@@ -173,6 +175,7 @@ function addSalesman(event) {
   renderSalesmanOptions();
   salarySalesmanInput.value = name;
   newSalesmanInput.value = "";
+  saveSalaryDraft();
 }
 
 function getCurrentBaseSettings() {
@@ -248,14 +251,19 @@ function buildSalaryMonthRows() {
     return;
   }
 
-  salaryMonths.innerHTML = getMonthSegments(salaryStartDateInput.value, salaryEndDateInput.value)
+  renderSalaryMonthRows(getMonthSegments(salaryStartDateInput.value, salaryEndDateInput.value));
+  saveSalaryDraft();
+}
+
+function renderSalaryMonthRows(segments, savedRows = []) {
+  salaryMonths.innerHTML = segments
     .map((segment, index) => `
       <article class="salary-month" data-start-date="${segment.startDate}" data-end-date="${segment.endDate}">
         <strong>${escapeHtml(formatMonthHeading(segment.startDate, segment.endDate))}</strong>
         <div class="field-grid">
           <label>
             Sales amount
-            <input class="month-sales" type="number" min="0" step="0.01" placeholder="0.00" required>
+            <input class="month-sales" type="number" min="0" step="0.01" placeholder="0.00" value="${escapeHtml(getSavedMonthSales(segment, savedRows))}" required>
           </label>
         </div>
         <small>Month ${index + 1}</small>
@@ -264,8 +272,78 @@ function buildSalaryMonthRows() {
     .join("");
 }
 
+function getSavedMonthSales(segment, savedRows) {
+  const savedRow = savedRows.find((row) => {
+    return row.startDate === segment.startDate && row.endDate === segment.endDate;
+  });
+
+  return savedRow ? savedRow.sales : "";
+}
+
 function getSalaryMonthRows() {
   return Array.from(document.querySelectorAll(".salary-month"));
+}
+
+function getCurrentSalaryDraft() {
+  return {
+    salesman: salarySalesmanInput.value,
+    tripNumber: salaryTripNumberInput.value,
+    startDate: salaryStartDateInput.value,
+    endDate: salaryEndDateInput.value,
+    baseSalary: baseSalaryInput.value,
+    inactiveSales: inactiveSalesInput.value,
+    commissionStart: commissionStartInput.value,
+    tierOneAmount: tierOneAmountInput.value,
+    tierOneRate: tierOneRateInput.value,
+    tierTwoAmount: tierTwoAmountInput.value,
+    tierTwoRate: tierTwoRateInput.value,
+    remainingRate: remainingRateInput.value,
+    monthRows: getSalaryMonthRows().map((row) => ({
+      startDate: row.dataset.startDate,
+      endDate: row.dataset.endDate,
+      sales: row.querySelector(".month-sales").value
+    }))
+  };
+}
+
+function saveSalaryDraft() {
+  if (isRestoringDraft) {
+    return;
+  }
+
+  saveToStorage(salaryDraftStorageKey, getCurrentSalaryDraft());
+}
+
+function restoreSalaryDraft() {
+  const draft = loadFromStorage(salaryDraftStorageKey, null);
+
+  if (!draft) {
+    return;
+  }
+
+  isRestoringDraft = true;
+
+  if (salesmen.includes(draft.salesman)) {
+    salarySalesmanInput.value = draft.salesman;
+  }
+
+  salaryTripNumberInput.value = draft.tripNumber || "";
+  salaryStartDateInput.value = draft.startDate || "";
+  salaryEndDateInput.value = draft.endDate || "";
+  baseSalaryInput.value = draft.baseSalary || baseSalaryInput.value;
+  inactiveSalesInput.value = draft.inactiveSales || inactiveSalesInput.value;
+  commissionStartInput.value = draft.commissionStart || commissionStartInput.value;
+  tierOneAmountInput.value = draft.tierOneAmount || tierOneAmountInput.value;
+  tierOneRateInput.value = draft.tierOneRate || tierOneRateInput.value;
+  tierTwoAmountInput.value = draft.tierTwoAmount || tierTwoAmountInput.value;
+  tierTwoRateInput.value = draft.tierTwoRate || tierTwoRateInput.value;
+  remainingRateInput.value = draft.remainingRate || remainingRateInput.value;
+
+  if (draft.startDate && draft.endDate && draft.monthRows && draft.monthRows.length) {
+    renderSalaryMonthRows(getMonthSegments(draft.startDate, draft.endDate), draft.monthRows);
+  }
+
+  isRestoringDraft = false;
 }
 
 function updateSalaryResult(total = 0, salesman = "", tripNumber = "", period = "", breakdown = []) {
@@ -345,6 +423,7 @@ function updateWhatsAppLink() {
 function calculateSalary(event) {
   event.preventDefault();
   saveCurrentBaseSettings();
+  saveSalaryDraft();
 
   const baseSalary = Number(baseSalaryInput.value);
   const inactiveSales = Number(inactiveSalesInput.value);
@@ -404,6 +483,7 @@ function calculateSalary(event) {
 function clearSalaryResult() {
   updateSalaryResult();
   salaryMonths.innerHTML = '<p class="empty-state">Enter trip dates, then build monthly rows.</p>';
+  localStorage.removeItem(salaryDraftStorageKey);
 }
 
 function saveForwardedMessage(event) {
@@ -495,6 +575,8 @@ function switchTab(tab) {
 
 salesmanForm.addEventListener("submit", addSalesman);
 salarySalesmanInput.addEventListener("change", loadBaseSettingsForSelectedSalesman);
+salaryForm.addEventListener("input", saveSalaryDraft);
+salaryForm.addEventListener("change", saveSalaryDraft);
 salaryForm.addEventListener("submit", calculateSalary);
 salaryForm.addEventListener("reset", clearSalaryResult);
 buildSalaryMonthsButton.addEventListener("click", buildSalaryMonthRows);
@@ -503,6 +585,7 @@ clearForwardedButton.addEventListener("click", clearForwardedMessages);
 tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab)));
 
 renderSalesmanOptions();
+restoreSalaryDraft();
 updateSalaryResult();
 renderForwardedMessages();
 renderSalesmanSettings();
