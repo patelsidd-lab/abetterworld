@@ -27,18 +27,44 @@ const whatsappShare = document.querySelector("#whatsapp-share");
 const forwardedList = document.querySelector("#forwarded-list");
 const clearForwardedButton = document.querySelector("#clear-forwarded");
 const settingsList = document.querySelector("#settings-list");
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
+const contractorForm = document.querySelector("#contractor-form");
+const contractorSelect = document.querySelector("#contractor-select");
+const contractorPayMonthInput = document.querySelector("#contractor-pay-month");
+const contractorNameInput = document.querySelector("#contractor-name");
+const contractorHolderInput = document.querySelector("#contractor-holder");
+const contractorBankInput = document.querySelector("#contractor-bank");
+const contractorBranchInput = document.querySelector("#contractor-branch");
+const contractorAccountInput = document.querySelector("#contractor-account");
+const contractorIfscInput = document.querySelector("#contractor-ifsc");
+const contractorBaseSalaryInput = document.querySelector("#contractor-base-salary");
+const contractorPercentInput = document.querySelector("#contractor-percent");
+const saveContractorButton = document.querySelector("#save-contractor");
+const contractorTotalPay = document.querySelector("#contractor-total-pay");
+const contractorNote = document.querySelector("#contractor-note");
+const contractorSummaryText = document.querySelector("#contractor-summary-text");
+const contractorWhatsAppShare = document.querySelector("#contractor-whatsapp-share");
+const cleanContractorSummaryButton = document.querySelector("#clean-contractor-summary");
+const contractorList = document.querySelector("#contractor-list");
+const mainTabs = document.querySelectorAll(".main-tab");
+const mainPanels = document.querySelectorAll(".main-panel");
+const sidTabs = document.querySelectorAll(".sid-tab");
+const sidPanels = document.querySelectorAll(".sid-panel");
+const tinkyTabs = document.querySelectorAll(".tinky-tab");
+const tinkyPanels = document.querySelectorAll(".tinky-subpanel");
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
 const salesmanStorageKey = "travelDaysSalesmen";
 const forwardedMessagesStorageKey = "salaryForwardedMessages";
 const salesmanSettingsStorageKey = "salesmanBaseSettings";
 const salaryDraftStorageKey = "salaryCalculatorDraft";
+const contractorStorageKey = "tinkyContractors";
+const contractorSummaryStorageKey = "tinkyContractorSummaries";
 
 let salesmen = loadFromStorage(salesmanStorageKey, []);
 let forwardedMessages = loadFromStorage(forwardedMessagesStorageKey, []);
 let salesmanSettings = loadFromStorage(salesmanSettingsStorageKey, {});
+let contractors = loadFromStorage(contractorStorageKey, getDefaultContractors());
+let contractorSummaryEntries = loadFromStorage(contractorSummaryStorageKey, []);
 let currentSummaryMessage = "";
 let currentSummaryKey = "";
 let isRestoringDraft = false;
@@ -59,6 +85,154 @@ function loadFromStorage(key, fallback) {
 
 function saveToStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getDefaultContractors() {
+  return [
+    {
+      id: "surya-prasanna",
+      name: "Surya Prasanna",
+      holder: "Surya Prasanna",
+      bank: "State Bank of India",
+      branch: "",
+      account: "40067197127",
+      ifsc: "SBIN0021044",
+      baseSalary: 35000,
+      percent: 100
+    },
+    {
+      id: "muskan-vishwakarma",
+      name: "Muskan Vishwakarma",
+      holder: "Muskan Vishwakarma",
+      bank: "Kotak Mahindra Bank",
+      branch: "Chappru Nagar Square, Nagpur",
+      account: "9246034930",
+      ifsc: "KKBK0001829",
+      baseSalary: 25000,
+      percent: 100
+    },
+    {
+      id: "anam-ajaz-shaikh",
+      name: "Anam Ajaz Shaikh",
+      holder: "Anam Ajaz Shaikh",
+      bank: "Union Bank",
+      branch: "Saubhagya nagar - Deolali Camp",
+      account: "502002010096694",
+      ifsc: "UBIN0550205",
+      baseSalary: 31500,
+      percent: 90
+    },
+    {
+      id: "manmeet-bindra",
+      name: "Manmeet Bindra",
+      holder: "Manmeet Bindra",
+      bank: "Union Bank Of India",
+      branch: "Janakpuri, New Delhi - 110058",
+      account: "026812010001346",
+      ifsc: "UBIN0802689",
+      baseSalary: 38500,
+      percent: 100
+    },
+    {
+      id: "kamlesh-kumari",
+      name: "Kamlesh Kumari",
+      holder: "Kamlesh Kumari",
+      bank: "Canara Bank",
+      branch: "Delhi Nangal Raya Branch",
+      account: "90192010194488",
+      ifsc: "CNRB0019019",
+      baseSalary: 29000,
+      percent: 100
+    },
+    {
+      id: "aastha-jaiswal",
+      name: "Aastha Jaiswal",
+      holder: "AASTHA JAISWAL U/G SHIKHA JAISWAL",
+      bank: "UCO BANK",
+      branch: "GRAM PIPLIA HANA-INDORE",
+      account: "05250110017593",
+      ifsc: "UCBA0000525",
+      baseSalary: 38000,
+      percent: 100
+    },
+    {
+      id: "janvi-lalwani",
+      name: "Janvi Lalwani",
+      holder: "Janvi Lalwani",
+      bank: "Bank of Baroda",
+      branch: "Manik Bagh Road, Indore (M.P) - 452001",
+      account: "49920100007185",
+      ifsc: "BARB0MANBAG",
+      baseSalary: 27000,
+      percent: 50
+    },
+    {
+      id: "karishma-patro",
+      name: "Karishma Patro",
+      holder: "Baratu Karishma Patro",
+      bank: "IDBI BANK",
+      branch: "CRP Square Branch",
+      account: "2142104000019831",
+      ifsc: "IBKL0002142",
+      baseSalary: 25000,
+      percent: 100
+    },
+    {
+      id: "swati-barua",
+      name: "Swati Barua",
+      holder: "Swati Barua",
+      bank: "Union Bank of India",
+      branch: "Uttam Nagar",
+      account: "254512010000069",
+      ifsc: "UBIN0825450",
+      baseSalary: 32500,
+      percent: 100
+    },
+    {
+      id: "ashmita-anand",
+      name: "Ashmita Anand",
+      holder: "Ashmita Anand",
+      bank: "Union Bank of India",
+      branch: "Katni",
+      account: "325802010684527",
+      ifsc: "UBIN0532584",
+      baseSalary: 29000,
+      percent: 100
+    },
+    {
+      id: "manikandan-raja",
+      name: "Manikandan, Raja",
+      holder: "R. Manikandan",
+      bank: "Standard Chartered Bank",
+      branch: "Jubilee Hills, Hyderabad",
+      account: "44411811218",
+      ifsc: "SCBL0036090",
+      baseSalary: 28000,
+      percent: 100
+    },
+    {
+      id: "mow-mukherjee",
+      name: "Mow Mukherjee",
+      holder: "MOW MUKHERJEE",
+      bank: "ICICI BANK",
+      branch: "",
+      account: "029201519329",
+      ifsc: "ICIC0000292",
+      baseSalary: 25000,
+      percent: 96
+    },
+    {
+      id: "palwinder-kaur",
+      name: "Palwinder Kaur",
+      holder: "Palwinder Kaur",
+      bank: "Kotak Mahindra Bank",
+      branch: "Saharanpur",
+      account: "6348504385",
+      ifsc: "KKBK00053053",
+      baseSalary: 25000,
+      percent: 96
+    }
+  ];
 }
 
 function parseLocalDate(value) {
@@ -82,10 +256,32 @@ function formatDisplayDate(value) {
   });
 }
 
+function formatMonthYear(value) {
+  if (!value) {
+    return new Date().toLocaleDateString(undefined, {
+      month: "long",
+      year: "numeric"
+    });
+  }
+
+  const [year, month] = value.split("-").map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric"
+  });
+}
+
 function formatCurrency(value) {
   return value.toLocaleString(undefined, {
     style: "currency",
     currency: "USD"
+  });
+}
+
+function formatINR(value) {
+  return Number(value).toLocaleString("en-IN", {
+    style: "currency",
+    currency: "INR"
   });
 }
 
@@ -734,14 +930,307 @@ function clearForwardedMessages() {
   renderForwardedMessages();
 }
 
-function switchTab(tab) {
-  tabs.forEach((button) => {
+function setDefaultContractorPayMonth() {
+  const today = new Date();
+  contractorPayMonthInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function maskAccountNumber(account) {
+  const cleanAccount = String(account || "").trim();
+
+  if (cleanAccount.length <= 4) {
+    return cleanAccount || "Not entered";
+  }
+
+  return `ending ${cleanAccount.slice(-4)}`;
+}
+
+function renderContractorOptions() {
+  const selectedContractor = contractorSelect.value;
+
+  contractorSelect.innerHTML = '<option value="" selected disabled>Select a contractor</option>';
+  contractors
+    .slice()
+    .sort((first, second) => first.name.localeCompare(second.name))
+    .forEach((contractor) => {
+      contractorSelect.add(new Option(contractor.name, contractor.id));
+    });
+
+  if (contractors.some((contractor) => contractor.id === selectedContractor)) {
+    contractorSelect.value = selectedContractor;
+  }
+}
+
+function getContractorPay(contractor) {
+  return Number(contractor.baseSalary || 0) * (Number(contractor.percent || 0) / 100);
+}
+
+function renderContractorList() {
+  if (!contractors.length) {
+    contractorList.innerHTML = '<p class="empty-state">No contractors saved yet.</p>';
+    return;
+  }
+
+  contractorList.innerHTML = contractors
+    .slice()
+    .sort((first, second) => first.name.localeCompare(second.name))
+    .map((contractor) => `
+      <article class="settings-record">
+        <strong>${escapeHtml(contractor.name)}</strong>
+        <div class="settings-grid">
+          <span>Base salary: ${formatINR(Number(contractor.baseSalary || 0))}</span>
+          <span>Bank: ${escapeHtml(contractor.bank || "Not entered")}</span>
+          <span>Account: ${escapeHtml(maskAccountNumber(contractor.account))}</span>
+          <span>Holder: ${escapeHtml(contractor.holder || "Not entered")}</span>
+          <span>IFSC: ${escapeHtml(contractor.ifsc || "Not entered")}</span>
+        </div>
+        <div class="record-actions">
+          <button class="small-button secondary contractor-edit" type="button" data-contractor-id="${escapeHtml(contractor.id)}">Edit</button>
+          <button class="small-button secondary contractor-remove" type="button" data-contractor-id="${escapeHtml(contractor.id)}">Remove</button>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function loadContractor(contractorId) {
+  const contractor = contractors.find((entry) => entry.id === contractorId);
+
+  if (!contractor) {
+    return;
+  }
+
+  contractorNameInput.value = contractor.name || "";
+  contractorHolderInput.value = contractor.holder || "";
+  contractorBankInput.value = contractor.bank || "";
+  contractorBranchInput.value = contractor.branch || "";
+  contractorAccountInput.value = contractor.account || "";
+  contractorIfscInput.value = contractor.ifsc || "";
+  contractorBaseSalaryInput.value = contractor.baseSalary ?? "";
+  contractorPercentInput.value = contractor.percent ?? "";
+  updateContractorResult(contractor);
+}
+
+function makeContractorId(name) {
+  const baseId = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "contractor";
+  let id = baseId;
+  let index = 2;
+
+  while (contractors.some((contractor) => contractor.id === id && contractor.id !== contractorSelect.value)) {
+    id = `${baseId}-${index}`;
+    index += 1;
+  }
+
+  return id;
+}
+
+function getContractorFormData() {
+  const name = contractorNameInput.value.trim();
+
+  return {
+    id: contractorSelect.value || makeContractorId(name),
+    payMonth: contractorPayMonthInput.value,
+    name,
+    holder: contractorHolderInput.value.trim(),
+    bank: contractorBankInput.value.trim(),
+    branch: contractorBranchInput.value.trim(),
+    account: contractorAccountInput.value.trim(),
+    ifsc: contractorIfscInput.value.trim(),
+    baseSalary: Number(contractorBaseSalaryInput.value || 0),
+    percent: Number(contractorPercentInput.value || 0)
+  };
+}
+
+function updateContractorResult(contractor) {
+  const payableSalary = getContractorPay(contractor);
+
+  contractorTotalPay.textContent = formatINR(payableSalary);
+  contractorNote.textContent = contractor.name
+    ? `${contractor.name}: ${formatINR(Number(contractor.baseSalary || 0))} x ${formatRate(contractor.percent || 0)} = ${formatINR(payableSalary)}`
+    : "Enter contractor details to calculate salary.";
+}
+
+function calculateContractorSalary(event) {
+  event.preventDefault();
+  const contractor = getContractorFormData();
+
+  updateContractorResult(contractor);
+  addContractorSummary(contractor);
+}
+
+function buildContractorSummaryMessage(contractor) {
+  const payableSalary = getContractorPay(contractor);
+
+  return [
+    formatMonthYear(contractor.payMonth),
+    "",
+    "Contractor salary details",
+    `Name: ${contractor.name || ""}`,
+    `Account holder: ${contractor.holder || ""}`,
+    `Bank: ${contractor.bank || ""}`,
+    `Branch: ${contractor.branch || ""}`,
+    `Account number: ${contractor.account || ""}`,
+    `IFSC: ${contractor.ifsc || ""}`,
+    "",
+    `Salary: ${formatINR(Number(contractor.baseSalary || 0))} x ${formatRate(contractor.percent || 0)} = ${formatINR(payableSalary)}`
+  ].join("\n");
+}
+
+function getContractorSummaryKey(contractor) {
+  return contractor.id || contractor.name.toLowerCase().trim();
+}
+
+function addContractorSummary(contractor) {
+  if (!contractor.name) {
+    return;
+  }
+
+  const key = getContractorSummaryKey(contractor);
+  const summaryEntry = {
+    key,
+    contractor,
+    updatedAt: new Date().toISOString()
+  };
+  const existingIndex = contractorSummaryEntries.findIndex((entry) => entry.key === key);
+
+  if (existingIndex >= 0) {
+    contractorSummaryEntries[existingIndex] = summaryEntry;
+  } else {
+    contractorSummaryEntries.push(summaryEntry);
+  }
+
+  saveToStorage(contractorSummaryStorageKey, contractorSummaryEntries);
+  renderContractorSummary();
+}
+
+function buildAllContractorSummaryMessage() {
+  return contractorSummaryEntries
+    .map((entry) => buildContractorSummaryMessage(entry.contractor))
+    .join("\n\n--------------------\n\n");
+}
+
+function renderContractorSummary() {
+  if (!contractorSummaryEntries.length) {
+    contractorSummaryText.textContent = "Click Calculate contractor salary to add a contractor to this summary.";
+    updateContractorWhatsAppLink("");
+    return;
+  }
+
+  const summaryMessage = buildAllContractorSummaryMessage();
+  contractorSummaryText.textContent = summaryMessage;
+  updateContractorWhatsAppLink(summaryMessage);
+}
+
+function updateContractorWhatsAppLink(summaryMessage) {
+  if (!summaryMessage) {
+    contractorWhatsAppShare.href = "#";
+    contractorWhatsAppShare.classList.add("is-disabled");
+    contractorWhatsAppShare.setAttribute("aria-disabled", "true");
+    return;
+  }
+
+  contractorWhatsAppShare.href = `https://wa.me/?text=${encodeURIComponent(summaryMessage)}`;
+  contractorWhatsAppShare.classList.remove("is-disabled");
+  contractorWhatsAppShare.removeAttribute("aria-disabled");
+}
+
+function cleanContractorSummary() {
+  contractorSummaryEntries = [];
+  saveToStorage(contractorSummaryStorageKey, contractorSummaryEntries);
+  renderContractorSummary();
+}
+
+function saveContractor() {
+  const contractor = getContractorFormData();
+  const { payMonth, ...contractorToSave } = contractor;
+
+  if (!contractor.name) {
+    contractorNote.textContent = "Enter a contractor name before saving.";
+    return;
+  }
+
+  const existingIndex = contractors.findIndex((entry) => entry.id === contractorToSave.id);
+
+  if (existingIndex >= 0) {
+    contractors[existingIndex] = contractorToSave;
+  } else {
+    contractors.push(contractorToSave);
+  }
+
+  contractors.sort((first, second) => first.name.localeCompare(second.name));
+  saveToStorage(contractorStorageKey, contractors);
+  renderContractorOptions();
+  contractorSelect.value = contractorToSave.id;
+  renderContractorList();
+  updateContractorResult({ ...contractorToSave, payMonth });
+}
+
+function editContractor(contractorId) {
+  const contractor = contractors.find((entry) => entry.id === contractorId);
+
+  if (!contractor) {
+    return;
+  }
+
+  contractorSelect.value = contractor.id;
+  loadContractor(contractor.id);
+  switchTab(document.querySelector("#tab-contractor-salary"), tinkyTabs, tinkyPanels);
+}
+
+function removeContractor(contractorId) {
+  const contractor = contractors.find((entry) => entry.id === contractorId);
+
+  if (!contractor) {
+    return;
+  }
+
+  const shouldRemove = window.confirm(`Remove ${contractor.name} from base numbers?`);
+
+  if (!shouldRemove) {
+    return;
+  }
+
+  contractors = contractors.filter((entry) => entry.id !== contractorId);
+  contractorSummaryEntries = contractorSummaryEntries.filter((entry) => entry.key !== contractorId);
+  saveToStorage(contractorStorageKey, contractors);
+  saveToStorage(contractorSummaryStorageKey, contractorSummaryEntries);
+  renderContractorOptions();
+  renderContractorList();
+  renderContractorSummary();
+
+  if (contractorSelect.value === contractorId) {
+    contractorForm.reset();
+    setDefaultContractorPayMonth();
+    updateContractorResult({ name: "" });
+  }
+}
+
+function handleContractorListClick(event) {
+  const editButton = event.target.closest(".contractor-edit");
+  const removeButton = event.target.closest(".contractor-remove");
+
+  if (editButton) {
+    editContractor(editButton.dataset.contractorId);
+    return;
+  }
+
+  if (removeButton) {
+    removeContractor(removeButton.dataset.contractorId);
+  }
+}
+
+function switchTab(tab, tabGroup, panelGroup) {
+  tabGroup.forEach((button) => {
     const isActive = button === tab;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-selected", String(isActive));
   });
 
-  panels.forEach((panel) => {
+  panelGroup.forEach((panel) => {
     const isActive = panel.id === tab.getAttribute("aria-controls");
     panel.classList.toggle("is-active", isActive);
     panel.hidden = !isActive;
@@ -759,10 +1248,21 @@ useDetectedTextButton.addEventListener("click", useDetectedText);
 buildSalaryMonthsButton.addEventListener("click", buildSalaryMonthRows);
 whatsappShare.addEventListener("click", saveForwardedMessage);
 clearForwardedButton.addEventListener("click", clearForwardedMessages);
-tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab)));
+contractorSelect.addEventListener("change", () => loadContractor(contractorSelect.value));
+contractorForm.addEventListener("submit", calculateContractorSalary);
+saveContractorButton.addEventListener("click", saveContractor);
+cleanContractorSummaryButton.addEventListener("click", cleanContractorSummary);
+contractorList.addEventListener("click", handleContractorListClick);
+mainTabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab, mainTabs, mainPanels)));
+sidTabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab, sidTabs, sidPanels)));
+tinkyTabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab, tinkyTabs, tinkyPanels)));
 
 renderSalesmanOptions();
 restoreSalaryDraft();
 updateSalaryResult();
 renderForwardedMessages();
 renderSalesmanSettings();
+setDefaultContractorPayMonth();
+renderContractorOptions();
+renderContractorList();
+renderContractorSummary();

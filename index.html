@@ -14,13 +14,19 @@
         <h1 id="app-title">Calculate salesman salary</h1>
       </div>
 
-      <div class="tabs" role="tablist" aria-label="Salary sections">
-        <button id="tab-salary" class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="salary-panel">Salary</button>
-        <button id="tab-forwarded" class="tab" type="button" role="tab" aria-selected="false" aria-controls="forwarded-panel">Forwarded messages</button>
-        <button id="tab-settings" class="tab" type="button" role="tab" aria-selected="false" aria-controls="settings-panel">Base numbers</button>
+      <div class="main-tabs tabs" role="tablist" aria-label="App sections">
+        <button id="tab-sid" class="main-tab tab is-active" type="button" role="tab" aria-selected="true" aria-controls="sid-panel">Sid Salary calculator</button>
+        <button id="tab-tinky" class="main-tab tab" type="button" role="tab" aria-selected="false" aria-controls="tinky-panel">Tinky's Stuff</button>
       </div>
 
-      <section id="salary-panel" class="panel is-active" role="tabpanel" aria-labelledby="tab-salary">
+      <section id="sid-panel" class="main-panel panel is-active" role="tabpanel" aria-labelledby="tab-sid">
+        <div class="sid-tabs tabs" role="tablist" aria-label="Sid sections">
+          <button id="tab-salary" class="sid-tab tab is-active" type="button" role="tab" aria-selected="true" aria-controls="salary-panel">Salary</button>
+          <button id="tab-forwarded" class="sid-tab tab" type="button" role="tab" aria-selected="false" aria-controls="forwarded-panel">Forwarded messages</button>
+          <button id="tab-settings" class="sid-tab tab" type="button" role="tab" aria-selected="false" aria-controls="settings-panel">Base numbers</button>
+        </div>
+
+      <section id="salary-panel" class="sid-panel panel is-active" role="tabpanel" aria-labelledby="tab-salary">
         <form id="salesman-form" class="inline-form">
           <label for="new-salesman">
             Add salesman
@@ -151,7 +157,7 @@
         </output>
       </section>
 
-      <section id="forwarded-panel" class="panel" role="tabpanel" aria-labelledby="tab-forwarded" hidden>
+      <section id="forwarded-panel" class="sid-panel panel" role="tabpanel" aria-labelledby="tab-forwarded" hidden>
         <div class="section-heading">
           <strong>Forwarded messages</strong>
           <button id="clear-forwarded" type="button" class="secondary small-button">Clear</button>
@@ -161,13 +167,117 @@
         </div>
       </section>
 
-      <section id="settings-panel" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <section id="settings-panel" class="sid-panel panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
         <div class="section-heading">
           <strong>Salesman base numbers</strong>
         </div>
         <div id="settings-list" class="settings-list" aria-live="polite">
           <p class="empty-state">Calculate a salary to save base numbers for a salesman.</p>
         </div>
+      </section>
+      </section>
+
+      <section id="tinky-panel" class="main-panel panel" role="tabpanel" aria-labelledby="tab-tinky" hidden>
+        <div class="tinky-tabs tabs" role="tablist" aria-label="Tinky sections">
+          <button id="tab-contractor-salary" class="tinky-tab tab is-active" type="button" role="tab" aria-selected="true" aria-controls="contractor-salary-panel">Salary</button>
+          <button id="tab-contractor-base" class="tinky-tab tab" type="button" role="tab" aria-selected="false" aria-controls="contractor-base-panel">Base numbers</button>
+        </div>
+
+        <section id="contractor-salary-panel" class="tinky-subpanel panel is-active" role="tabpanel" aria-labelledby="tab-contractor-salary">
+          <div class="section-heading">
+            <strong>Contractor salary calculator</strong>
+          </div>
+
+          <form id="contractor-form" class="salary-form">
+            <label for="contractor-select">
+              Contractor
+              <select id="contractor-select" name="contractor-select">
+                <option value="" selected disabled>Select a contractor</option>
+              </select>
+            </label>
+
+            <label for="contractor-pay-month">
+              Salary month
+              <input id="contractor-pay-month" name="contractor-pay-month" type="month">
+            </label>
+
+            <div class="field-grid">
+              <label for="contractor-name">
+                Name
+                <input id="contractor-name" name="contractor-name" type="text" autocomplete="off">
+              </label>
+
+              <label for="contractor-holder">
+                Account holder name
+                <input id="contractor-holder" name="contractor-holder" type="text" autocomplete="off">
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label for="contractor-bank">
+                Bank name
+                <input id="contractor-bank" name="contractor-bank" type="text" autocomplete="off">
+              </label>
+
+              <label for="contractor-branch">
+                Branch
+                <input id="contractor-branch" name="contractor-branch" type="text" autocomplete="off">
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label for="contractor-account">
+                Account number
+                <input id="contractor-account" name="contractor-account" type="text" autocomplete="off">
+              </label>
+
+              <label for="contractor-ifsc">
+                IFSC code
+                <input id="contractor-ifsc" name="contractor-ifsc" type="text" autocomplete="off">
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label for="contractor-base-salary">
+                Base salary
+                <input id="contractor-base-salary" name="contractor-base-salary" type="number" min="0" step="0.01">
+              </label>
+
+              <label for="contractor-percent">
+                Pay percentage
+                <input id="contractor-percent" name="contractor-percent" type="number" min="0" step="0.01">
+              </label>
+            </div>
+
+            <div class="actions salary-actions">
+              <button type="submit">Calculate contractor salary</button>
+              <button id="save-contractor" type="button" class="secondary">Save details</button>
+            </div>
+          </form>
+
+          <output id="contractor-result" class="salary-result" aria-live="polite">
+            <div class="salary-total-row">
+              <span>Payable salary</span>
+              <strong id="contractor-total-pay">INR 0.00</strong>
+            </div>
+            <p id="contractor-note">Select a contractor to calculate salary.</p>
+            <div class="contractor-summary">
+              <strong>Summary message</strong>
+              <pre id="contractor-summary-text">Select a contractor to preview the WhatsApp message.</pre>
+            </div>
+            <div class="share-actions">
+              <a id="contractor-whatsapp-share" class="whatsapp-button is-disabled" href="#" target="_blank" rel="noopener">Forward on WhatsApp</a>
+              <button id="clean-contractor-summary" type="button" class="secondary">Clean summary</button>
+            </div>
+          </output>
+        </section>
+
+        <section id="contractor-base-panel" class="tinky-subpanel panel" role="tabpanel" aria-labelledby="tab-contractor-base" hidden>
+          <div class="section-heading contractor-list-heading">
+            <strong>Contractor base numbers</strong>
+          </div>
+          <div id="contractor-list" class="settings-list" aria-live="polite"></div>
+        </section>
       </section>
     </section>
   </main>
